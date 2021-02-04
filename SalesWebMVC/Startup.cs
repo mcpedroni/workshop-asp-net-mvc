@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVC.Models;
+using SalesWebMVC.Data;
 
 namespace SalesWebMVC {
     public class Startup {
@@ -34,12 +35,16 @@ namespace SalesWebMVC {
             services.AddDbContext<SalesWebMVCContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("SalesWebMVCContext"), builder =>
                     builder.MigrationsAssembly("SalesWebMVC")));
+
+            services.AddScoped<SeedingService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, SeedingService seedingService) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
+                //insert records on database
+                seedingService.Seed();
             } else {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
