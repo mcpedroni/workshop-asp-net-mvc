@@ -1,9 +1,8 @@
 ﻿using SalesWebMVC.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SalesWebMVC.Services.Exceptions;
 
 namespace SalesWebMVC.Services {
     public class SellerService {
@@ -34,6 +33,21 @@ namespace SalesWebMVC.Services {
         public void Insert(Seller obj) {
             _context.Add(obj);
             _context.SaveChanges();
+        }
+
+        public void Update(Seller obj) {
+            //Any: Is there any register in database? If not, throw a message
+            if (!_context.Seller.Any(x => x.Id == obj.Id)) {
+                throw new NotFoundException("Id not found");
+            }
+
+            //there is a register
+            try {
+                _context.Update(obj);
+                _context.SaveChanges();
+            } catch (DbUpdateConcurrencyException e){
+                throw new DbConcurrencyException(e.Message);
+            }
         }
     }
 }
