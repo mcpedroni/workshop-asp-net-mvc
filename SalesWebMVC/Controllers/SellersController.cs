@@ -32,6 +32,14 @@ namespace SalesWebMVC.Controllers {
         [HttpPost]//do this becasue it is an action of post and not get
         [ValidateAntiForgeryToken]
         public IActionResult Create(Seller seller) {
+
+            //I have validation in Create.cshtml, but if the customer turn off JS, the validation does not work. This reason i have to put  the validation above
+            if (!ModelState.IsValid) {
+                var departments = _departmentService.FindAll();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+
             //insert record on database
             _sellerService.Insert(seller);
 
@@ -73,6 +81,7 @@ namespace SalesWebMVC.Controllers {
         }
 
         public IActionResult Edit(int? id) {
+
             if (id == null) {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
@@ -90,6 +99,12 @@ namespace SalesWebMVC.Controllers {
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Seller seller) {
+            //I have validation in Edit.cshtml, but if the customer turn off JS, the validation does not work. This reason i have to put  the validation above
+            if (!ModelState.IsValid) {
+                var departments = _departmentService.FindAll();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments};
+                return View(viewModel);
+            }
 
             //it is difficult to happening, but if id is not the same...we can not edit
             if (id !=  seller.Id) {
