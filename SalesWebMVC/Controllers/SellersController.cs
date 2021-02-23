@@ -64,8 +64,12 @@ namespace SalesWebMVC.Controllers {
         [HttpPost]//do this becasue it is an action of delete and not get
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int Id) {
-            await _sellerService.RemoveAsync(Id);
-            return RedirectToAction(nameof(Index));
+            try {
+                await _sellerService.RemoveAsync(Id);
+                return RedirectToAction(nameof(Index));
+            } catch (IntegrityException e) {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public async Task<IActionResult> Details(int? id) {
