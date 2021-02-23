@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using SalesWebMVC.Services.Exceptions;
 
 namespace SalesWebMVC.Services {
@@ -13,38 +14,39 @@ namespace SalesWebMVC.Services {
             _context = context;
         }
 
-        public List<Seller> FindAll() {
-            return _context.Seller.OrderBy(s => s.Name).ToList();
+        public async Task<List<Seller>> FindAllAsync() {
+            return await _context.Seller.OrderBy(s => s.Name).ToListAsync();
         }
 
-        public Seller FindById(int id) {
+        public async Task <Seller> FindByIdAsync(int id) {
             //return _context.Seller.FirstOrDefault(s => s.Id == id ); //this way search only seller
 
             //using EntityFrameworkCore to do join tables between Seller and Department
-            return _context.Seller.Include(obj => obj.Department).FirstOrDefault(s => s.Id == id);
+            return await _context.Seller.Include(obj => obj.Department).FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public void Remove(int id) {
-            var obj = _context.Seller.Find(id);
+        public async Task RemoveAsync(int id) {
+            var obj = await _context.Seller.FindAsync(id);
             _context.Seller.Remove(obj);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Insert(Seller obj) {
+        public async Task InsertAsync(Seller obj) {
             _context.Add(obj);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(Seller obj) {
+        public async Task UpdateAsync(Seller obj) {
             //Any: Is there any register in database? If not, throw a message
-            if (!_context.Seller.Any(x => x.Id == obj.Id)) {
+            var hasName = await _context.Seller.AnyAsync(x => x.Id == obj.Id);   
+            if (!hasName) {
                 throw new NotFoundException("Id not found");
             }
 
             //there is a register
             try {
                 _context.Update(obj);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             } catch (DbUpdateConcurrencyException e){
                 throw new DbConcurrencyException(e.Message);
             }
